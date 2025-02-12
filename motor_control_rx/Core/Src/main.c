@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "NRF24L01.h"
 #include "string.h"
+#include "stdio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -61,16 +62,27 @@ static void MX_USART2_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+#define JOYSTICK_IN1_PORT GPIOA
+#define JOYSTICK_IN1_PIN  GPIO_PIN_9
+#define JOYSTICK_IN2_PORT GPIOA
+#define JOYSTICK_IN2_PIN  GPIO_PIN_8
+#define JOYSTICK_IN3_PORT GPIOB
+#define JOYSTICK_IN3_PIN  GPIO_PIN_5
+#define JOYSTICK_IN4_PORT GPIOB
+#define JOYSTICK_IN4_PIN  GPIO_PIN_3
+
+
 uint8_t rx_addr[] = {0xEE, 0xDD, 0xCC, 0xBB, 0xAA};
 //uint8_t rx_addr[] = {0xE7, 0xE7, 0xE7, 0xE7, 0xE7};
 uint8_t rx_data[32];
 char coordinate_arr[100];
-int x_coordinate_val = 30;
-int y_coordinate_val = 30;
-uint8_t xy_coordinate_val[2];
+uint8_t x_coordinate_val = 0;
+uint8_t y_coordinate_val = 0;
+uint8_t dummy = 0;
+//uint8_t xy_coordinate_val[2];
 
 
-int joystick_coordiantes_rx()
+void joystick_coordiantes_rx(uint8_t* xy_coordinate_val)
 {
 		  if (data_available(1)==1)
 		  {
@@ -81,16 +93,53 @@ int joystick_coordiantes_rx()
 			  xy_coordinate_val[0] = rx_data[0];
 			  xy_coordinate_val[1] = rx_data[4];
 
-
+//			  sprintf(coordinate_arr,  "\rX-Coordinate: %d Y-Coordinate:", xy_coordinate_val[0]);
 			  sprintf(coordinate_arr,  "\rX-Coordinate: %d Y-Coordinate: %d \n", xy_coordinate_val[0],xy_coordinate_val[1]);
-			  HAL_UART_Transmit(&huart2, coordinate_arr, 50, 1000);
+			  HAL_UART_Transmit(&huart2, (uint8_t*)coordinate_arr, 50, 1000);
 
-			  return xy_coordinate_val;
+//			  return xy_coordinate_val;
 
 		  }
 
-		  return 0;
+//		  return 0;
 
+}
+
+void direction(uint8_t* xy_coordinate_val)
+{
+	x_coordinate_val = xy_coordinate_val[0];
+	y_coordinate_val = xy_coordinate_val[1];
+
+	if (y_coordinate_val < 100)
+	{
+		forward(y_coordinate_val);
+		uint8_t dummy = 0;
+	}
+	else if (y_coordinate_val > 160)
+	{
+//		backward();
+		uint8_t dummy = 0;
+	}
+	else if (x_coordinate_val >160)
+	{
+//		clockwise();
+		uint8_t dummy = 0;
+	}
+
+	else if (x_coordinate_val <100)
+	{
+//		couunter_clockwise();
+		uint8_t dummy = 0;
+	}
+
+}
+
+void forward(y_coordinate_val)
+{
+	while(y_coordinate_val < 100)
+	{
+
+	}
 }
 
 
@@ -105,6 +154,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+	uint8_t xy_coordinate_val[2];
 
   /* USER CODE END 1 */
 
@@ -143,7 +193,9 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	  joystick_coordiantes_rx();
+
+	  joystick_coordiantes_rx(xy_coordinate_val);
+	  direction(xy_coordinate_val);
 //	  choose_direction();
 
   }
@@ -287,6 +339,12 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(CE_GPIO_Port, CE_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, IN2_Pin|IN1_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, IN4_Pin|IN3_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : CE_Pin */
@@ -296,12 +354,19 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(CE_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : CS_Pin */
-  GPIO_InitStruct.Pin = CS_Pin;
+  /*Configure GPIO pins : IN2_Pin IN1_Pin */
+  GPIO_InitStruct.Pin = IN2_Pin|IN1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(CS_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : IN4_Pin IN3_Pin CS_Pin */
+  GPIO_InitStruct.Pin = IN4_Pin|IN3_Pin|CS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
