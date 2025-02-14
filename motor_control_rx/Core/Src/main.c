@@ -79,10 +79,11 @@ char coordinate_arr[100];
 uint8_t x_coordinate_val = 0;
 uint8_t y_coordinate_val = 0;
 uint8_t dummy = 0;
+uint8_t xy_coordinate_val[2];
 //uint8_t xy_coordinate_val[2];
 
 
-void joystick_coordiantes_rx(uint8_t* xy_coordinate_val)
+void joystick_coordiantes_rx()
 {
 		  if (data_available(1)==1)
 		  {
@@ -105,31 +106,40 @@ void joystick_coordiantes_rx(uint8_t* xy_coordinate_val)
 
 }
 
-void direction(uint8_t* xy_coordinate_val)
+//void direction(uint8_t* xy_coordinate_val)
+void direction()
 {
-	x_coordinate_val = xy_coordinate_val[0];
-	y_coordinate_val = xy_coordinate_val[1];
+//	x_coordinate_val = xy_coordinate_val[0];
+//	y_coordinate_val = xy_coordinate_val[1];
 
-	if (y_coordinate_val < 100)
-	{
-		forward(y_coordinate_val);
-		uint8_t dummy = 0;
-	}
-	else if (y_coordinate_val > 160)
-	{
-//		backward();
-		uint8_t dummy = 0;
-	}
-	else if (x_coordinate_val >160)
-	{
-//		clockwise();
-		uint8_t dummy = 0;
-	}
+	while(1){
 
-	else if (x_coordinate_val <100)
-	{
-//		couunter_clockwise();
-		uint8_t dummy = 0;
+		joystick_coordiantes_rx();
+		x_coordinate_val = xy_coordinate_val[0];
+		y_coordinate_val = xy_coordinate_val[1];
+
+		if (y_coordinate_val < 100)
+		{
+			forward(y_coordinate_val);
+		}
+		else if (y_coordinate_val > 160)
+		{
+			reverse(y_coordinate_val);
+		}
+		else if (x_coordinate_val >160)
+		{
+			clockwise(x_coordinate_val);
+		}
+
+		else if (x_coordinate_val <100)
+		{
+			counter_clockwise(x_coordinate_val);
+		}
+
+		else
+		{
+			no_move();
+		}
 	}
 
 }
@@ -138,10 +148,78 @@ void forward(y_coordinate_val)
 {
 	while(y_coordinate_val < 100)
 	{
+		HAL_GPIO_WritePin (JOYSTICK_IN1_PORT, JOYSTICK_IN1_PIN, 1);
+		HAL_GPIO_WritePin (JOYSTICK_IN2_PORT, JOYSTICK_IN2_PIN, 0);
+		HAL_GPIO_WritePin (JOYSTICK_IN3_PORT, JOYSTICK_IN3_PIN, 1);
+		HAL_GPIO_WritePin (JOYSTICK_IN4_PORT, JOYSTICK_IN4_PIN, 0);
 
+		//Assigns xy_coordinate_val array to a new set of x,y coordinates;
+		joystick_coordiantes_rx();
+
+		//while loop rechecks this new value to check if were moving in a different direction
+		y_coordinate_val = xy_coordinate_val[1];
 	}
 }
 
+void reverse(y_coordinate_val)
+{
+	while(y_coordinate_val > 160)
+	{
+		HAL_GPIO_WritePin (JOYSTICK_IN1_PORT, JOYSTICK_IN1_PIN, 0);
+		HAL_GPIO_WritePin (JOYSTICK_IN2_PORT, JOYSTICK_IN2_PIN, 1);
+		HAL_GPIO_WritePin (JOYSTICK_IN3_PORT, JOYSTICK_IN3_PIN, 0);
+		HAL_GPIO_WritePin (JOYSTICK_IN4_PORT, JOYSTICK_IN4_PIN, 1);
+
+		//Assigns xy_coordinate_val array to a new set of x,y coordinates;
+		joystick_coordiantes_rx();
+
+		//while loop rechecks this new value to check if were moving in a different direction
+		y_coordinate_val = xy_coordinate_val[1];
+	}
+}
+
+void clockwise(x_coordinate_val)
+{
+	while(x_coordinate_val > 160)
+	{
+		HAL_GPIO_WritePin (JOYSTICK_IN1_PORT, JOYSTICK_IN1_PIN, 1);
+		HAL_GPIO_WritePin (JOYSTICK_IN2_PORT, JOYSTICK_IN2_PIN, 0);
+		HAL_GPIO_WritePin (JOYSTICK_IN3_PORT, JOYSTICK_IN3_PIN, 0);
+		HAL_GPIO_WritePin (JOYSTICK_IN4_PORT, JOYSTICK_IN4_PIN, 0);
+
+		//Assigns xy_coordinate_val array to a new set of x,y coordinates;
+		joystick_coordiantes_rx();
+
+		//while loop rechecks this new value to check if were moving in a different direction
+		x_coordinate_val = xy_coordinate_val[0];
+	}
+}
+
+void counter_clockwise(x_coordinate_val)
+{
+	while(x_coordinate_val < 100)
+	{
+		HAL_GPIO_WritePin (JOYSTICK_IN1_PORT, JOYSTICK_IN1_PIN, 0);
+		HAL_GPIO_WritePin (JOYSTICK_IN2_PORT, JOYSTICK_IN2_PIN, 0);
+		HAL_GPIO_WritePin (JOYSTICK_IN3_PORT, JOYSTICK_IN3_PIN, 1);
+		HAL_GPIO_WritePin (JOYSTICK_IN4_PORT, JOYSTICK_IN4_PIN, 0);
+
+		//Assigns xy_coordinate_val array to a new set of x,y coordinates;
+		joystick_coordiantes_rx();
+
+		//while loop rechecks this new value to check if were moving in a different direction
+		x_coordinate_val = xy_coordinate_val[0];
+	}
+}
+
+
+void no_move()
+{
+		HAL_GPIO_WritePin (JOYSTICK_IN1_PORT, JOYSTICK_IN1_PIN, 0);
+		HAL_GPIO_WritePin (JOYSTICK_IN2_PORT, JOYSTICK_IN2_PIN, 0);
+		HAL_GPIO_WritePin (JOYSTICK_IN3_PORT, JOYSTICK_IN3_PIN, 0);
+		HAL_GPIO_WritePin (JOYSTICK_IN4_PORT, JOYSTICK_IN4_PIN, 0);
+}
 
 
 /* USER CODE END 0 */
@@ -154,7 +232,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	uint8_t xy_coordinate_val[2];
+//	uint8_t xy_coordinate_val[2];
 
   /* USER CODE END 1 */
 
@@ -194,8 +272,8 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 
-	  joystick_coordiantes_rx(xy_coordinate_val);
-	  direction(xy_coordinate_val);
+//	  joystick_coordiantes_rx(xy_coordinate_val);
+	  direction();
 //	  choose_direction();
 
   }
