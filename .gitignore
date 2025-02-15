@@ -1,10 +1,6 @@
-# Eclipse
-.metadata
-.settings
-[Rr]elease
-[Dd]ebug
-launch
-.cfg
-.ld
-.cfg
-*.launch
+**/.gitignore
+**/.pio
+**/.vscode
+**/CMakeLists.txt
+**/platformio.ini
+**/sdkconfig.esp32dev
