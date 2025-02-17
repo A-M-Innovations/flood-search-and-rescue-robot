@@ -2,5 +2,4 @@
 **/.pio
 **/.vscode
 **/CMakeLists.txt
-**/platformio.ini
 **/sdkconfig.esp32dev
