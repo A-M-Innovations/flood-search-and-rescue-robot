@@ -1,8 +1,6 @@
 /*
  * NRF24L01.h
  *
- *  Created on: Dec 20, 2024
- *      Author: Matthew
  */
 
 #ifndef INC_NRF24L01_H_
