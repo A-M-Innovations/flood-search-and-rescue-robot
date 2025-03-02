@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/uart.h"
@@ -26,17 +27,35 @@ void uart_init(void) {
 
 static void rx_uart_data(){
 
-    const char *RX_UART_TAG = "RX UART";
-    esp_log_level_set(RX_UART_TAG, ESP_LOG_INFO);
+    const char *GPGGA_FIELDS = "GPGGA Field";
+    esp_log_level_set(GPGGA_FIELDS, ESP_LOG_INFO);
     uint8_t* data = malloc((RX_BUFFER_SIZE+1)*sizeof(uint8_t));
+    char *data_str = malloc((RX_BUFFER_SIZE+1)*sizeof(uint8_t));
+    char *p;
+    char *GPGGA_vals[15];
+
     while (1){
         int rx_bytes = uart_read_bytes(uart_num, data, RX_BUFFER_SIZE, 200 / portTICK_PERIOD_MS);
         if (rx_bytes > 0){
             data[rx_bytes] = 0;
-            ESP_LOGI(RX_UART_TAG, "Read %d bytes: '%s'", rx_bytes, data);
-        }
+            sprintf(data_str,"%s",data);
+            p = strsep(&data_str, ",\n");
+
+            while(p != NULL){
+                p = strsep(&data_str, ",\n");
+                if (strcmp(p, "$GPGGA") == 0){
+                    for (int i = 0; i < 15; i++){
+                        GPGGA_vals[i] = p;
+                        ESP_LOGI(GPGGA_FIELDS, "%s", GPGGA_vals[i]);
+                        p = strsep(&data_str, ",\n");
+                    }
+                }
+            }
+                }
     }
     free(data);
+    free(data_str);
+    
 }
 
 void app_main() {
