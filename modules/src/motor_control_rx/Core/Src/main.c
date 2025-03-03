@@ -89,104 +89,104 @@ uint8_t xy_coordinate_val[2];
 // in the direction function
 void joystick_coordiantes_rx()
 {
-		  if (data_available(1)==1)
-		  {
-			  rx(rx_data);
+          if (data_available(1)==1)
+          {
+              rx(rx_data);
 
-			  //rx buffer has the x data on the 0th element and y data on the 4th element due to a
-			  //conversion from uint32_t to uint8_t in the motor_control tx project
-			  xy_coordinate_val[0] = rx_data[0];
-			  xy_coordinate_val[1] = rx_data[4];
+              //rx buffer has the x data on the 0th element and y data on the 4th element due to a
+              //conversion from uint32_t to uint8_t in the motor_control tx project
+              xy_coordinate_val[0] = rx_data[0];
+              xy_coordinate_val[1] = rx_data[4];
 
-			  //Used to debug and verify the correct coordinates are being transmitted to the NRF24L01 Receiver
-			  sprintf(coordinate_arr,  "\rX-Coordinate: %d Y-Coordinate: %d \n", xy_coordinate_val[0],xy_coordinate_val[1]);
-			  HAL_UART_Transmit(&huart2, (uint8_t*)coordinate_arr, 50, 1000);
-		  }
+              //Used to debug and verify the correct coordinates are being transmitted to the NRF24L01 Receiver
+              sprintf(coordinate_arr,  "\rX-Coordinate: %d Y-Coordinate: %d \n", xy_coordinate_val[0],xy_coordinate_val[1]);
+              HAL_UART_Transmit(&huart2, (uint8_t*)coordinate_arr, 50, 1000);
+          }
 }
 
 //This function sets both motors in the forward direction
 void forward(uint8_t y_coordinate_val)
 {
-	//check if were still moving in the same direction
-	while(y_coordinate_val < 100)
-	{
-		HAL_GPIO_WritePin (JOYSTICK_IN1_PORT, JOYSTICK_IN1_PIN, 1);
-		HAL_GPIO_WritePin (JOYSTICK_IN2_PORT, JOYSTICK_IN2_PIN, 0);
-		HAL_GPIO_WritePin (JOYSTICK_IN3_PORT, JOYSTICK_IN3_PIN, 1);
-		HAL_GPIO_WritePin (JOYSTICK_IN4_PORT, JOYSTICK_IN4_PIN, 0);
+    //check if were still moving in the same direction
+    while(y_coordinate_val < 100)
+    {
+        HAL_GPIO_WritePin (JOYSTICK_IN1_PORT, JOYSTICK_IN1_PIN, 1);
+        HAL_GPIO_WritePin (JOYSTICK_IN2_PORT, JOYSTICK_IN2_PIN, 0);
+        HAL_GPIO_WritePin (JOYSTICK_IN3_PORT, JOYSTICK_IN3_PIN, 1);
+        HAL_GPIO_WritePin (JOYSTICK_IN4_PORT, JOYSTICK_IN4_PIN, 0);
 
-		//assigns xy_coordinate_val array to a new set of x and y coordinates from the RF module
-		joystick_coordiantes_rx();
+        //assigns xy_coordinate_val array to a new set of x and y coordinates from the RF module
+        joystick_coordiantes_rx();
 
-		//update y variable to use the most updated joystick value
-		y_coordinate_val = xy_coordinate_val[1];
-	}
+        //update y variable to use the most updated joystick value
+        y_coordinate_val = xy_coordinate_val[1];
+    }
 }
 
 //This function sets both motors in the reverse direction
 void reverse(uint8_t y_coordinate_val)
 {
-	//check if were still moving in the same direction
-	while(y_coordinate_val > 160)
-	{
-		HAL_GPIO_WritePin (JOYSTICK_IN1_PORT, JOYSTICK_IN1_PIN, 0);
-		HAL_GPIO_WritePin (JOYSTICK_IN2_PORT, JOYSTICK_IN2_PIN, 1);
-		HAL_GPIO_WritePin (JOYSTICK_IN3_PORT, JOYSTICK_IN3_PIN, 0);
-		HAL_GPIO_WritePin (JOYSTICK_IN4_PORT, JOYSTICK_IN4_PIN, 1);
+    //check if were still moving in the same direction
+    while(y_coordinate_val > 160)
+    {
+        HAL_GPIO_WritePin (JOYSTICK_IN1_PORT, JOYSTICK_IN1_PIN, 0);
+        HAL_GPIO_WritePin (JOYSTICK_IN2_PORT, JOYSTICK_IN2_PIN, 1);
+        HAL_GPIO_WritePin (JOYSTICK_IN3_PORT, JOYSTICK_IN3_PIN, 0);
+        HAL_GPIO_WritePin (JOYSTICK_IN4_PORT, JOYSTICK_IN4_PIN, 1);
 
-		//assigns xy_coordinate_val array to a new set of x and y coordinates from the RF module
-		joystick_coordiantes_rx();
+        //assigns xy_coordinate_val array to a new set of x and y coordinates from the RF module
+        joystick_coordiantes_rx();
 
-		//update y variable to use the most updated joystick value
-		y_coordinate_val = xy_coordinate_val[1];
-	}
+        //update y variable to use the most updated joystick value
+        y_coordinate_val = xy_coordinate_val[1];
+    }
 }
 
 //This function sets the left motor in the forward direction and turns the right motor off
 void clockwise(uint8_t x_coordinate_val)
 {
-	//check if were still moving in the same direction
-	while(x_coordinate_val > 160)
-	{
-		HAL_GPIO_WritePin (JOYSTICK_IN1_PORT, JOYSTICK_IN1_PIN, 1);
-		HAL_GPIO_WritePin (JOYSTICK_IN2_PORT, JOYSTICK_IN2_PIN, 0);
-		HAL_GPIO_WritePin (JOYSTICK_IN3_PORT, JOYSTICK_IN3_PIN, 0);
-		HAL_GPIO_WritePin (JOYSTICK_IN4_PORT, JOYSTICK_IN4_PIN, 0);
+    //check if were still moving in the same direction
+    while(x_coordinate_val > 160)
+    {
+        HAL_GPIO_WritePin (JOYSTICK_IN1_PORT, JOYSTICK_IN1_PIN, 1);
+        HAL_GPIO_WritePin (JOYSTICK_IN2_PORT, JOYSTICK_IN2_PIN, 0);
+        HAL_GPIO_WritePin (JOYSTICK_IN3_PORT, JOYSTICK_IN3_PIN, 0);
+        HAL_GPIO_WritePin (JOYSTICK_IN4_PORT, JOYSTICK_IN4_PIN, 0);
 
-		//assigns xy_coordinate_val array to a new set of x and y coordinates from the RF module
-		joystick_coordiantes_rx();
+        //assigns xy_coordinate_val array to a new set of x and y coordinates from the RF module
+        joystick_coordiantes_rx();
 
-		//update y variable to use the most updated joystick value
-		x_coordinate_val = xy_coordinate_val[0];
-	}
+        //update y variable to use the most updated joystick value
+        x_coordinate_val = xy_coordinate_val[0];
+    }
 }
 
 //This function sets the right motor in the forward direction and turns the left motor off
 void counter_clockwise(uint8_t x_coordinate_val)
 {
-	//check if were still moving in the same direction
-	while(x_coordinate_val < 100)
-	{
-		HAL_GPIO_WritePin (JOYSTICK_IN1_PORT, JOYSTICK_IN1_PIN, 0);
-		HAL_GPIO_WritePin (JOYSTICK_IN2_PORT, JOYSTICK_IN2_PIN, 0);
-		HAL_GPIO_WritePin (JOYSTICK_IN3_PORT, JOYSTICK_IN3_PIN, 1);
-		HAL_GPIO_WritePin (JOYSTICK_IN4_PORT, JOYSTICK_IN4_PIN, 0);
+    //check if were still moving in the same direction
+    while(x_coordinate_val < 100)
+    {
+        HAL_GPIO_WritePin (JOYSTICK_IN1_PORT, JOYSTICK_IN1_PIN, 0);
+        HAL_GPIO_WritePin (JOYSTICK_IN2_PORT, JOYSTICK_IN2_PIN, 0);
+        HAL_GPIO_WritePin (JOYSTICK_IN3_PORT, JOYSTICK_IN3_PIN, 1);
+        HAL_GPIO_WritePin (JOYSTICK_IN4_PORT, JOYSTICK_IN4_PIN, 0);
 
-		//assigns xy_coordinate_val array to a new set of x and y coordinates from the RF module
-		joystick_coordiantes_rx();
+        //assigns xy_coordinate_val array to a new set of x and y coordinates from the RF module
+        joystick_coordiantes_rx();
 
-		//update y variable to use the most updated joystick value
-		x_coordinate_val = xy_coordinate_val[0];
-	}
+        //update y variable to use the most updated joystick value
+        x_coordinate_val = xy_coordinate_val[0];
+    }
 }
 
 //turn both motors off
 void no_move()
 {
-		HAL_GPIO_WritePin (JOYSTICK_IN1_PORT, JOYSTICK_IN1_PIN, 0);
-		HAL_GPIO_WritePin (JOYSTICK_IN2_PORT, JOYSTICK_IN2_PIN, 0);
-		HAL_GPIO_WritePin (JOYSTICK_IN3_PORT, JOYSTICK_IN3_PIN, 0);
-		HAL_GPIO_WritePin (JOYSTICK_IN4_PORT, JOYSTICK_IN4_PIN, 0);
+        HAL_GPIO_WritePin (JOYSTICK_IN1_PORT, JOYSTICK_IN1_PIN, 0);
+        HAL_GPIO_WritePin (JOYSTICK_IN2_PORT, JOYSTICK_IN2_PIN, 0);
+        HAL_GPIO_WritePin (JOYSTICK_IN3_PORT, JOYSTICK_IN3_PIN, 0);
+        HAL_GPIO_WritePin (JOYSTICK_IN4_PORT, JOYSTICK_IN4_PIN, 0);
 }
 
 //This function will execute a specific direction function for the motors
@@ -194,36 +194,36 @@ void no_move()
 void direction()
 {
 
-	while(1){
+    while(1){
 
-		joystick_coordiantes_rx();
+        joystick_coordiantes_rx();
 
-		x_coordinate_val = xy_coordinate_val[0];
-		y_coordinate_val = xy_coordinate_val[1];
+        x_coordinate_val = xy_coordinate_val[0];
+        y_coordinate_val = xy_coordinate_val[1];
 
-		if (y_coordinate_val < 100)
-		{
-			forward(y_coordinate_val);
-		}
-		else if (y_coordinate_val > 160)
-		{
-			reverse(y_coordinate_val);
-		}
-		else if (x_coordinate_val >160)
-		{
-			clockwise(x_coordinate_val);
-		}
+        if (y_coordinate_val < 100)
+        {
+            forward(y_coordinate_val);
+        }
+        else if (y_coordinate_val > 160)
+        {
+            reverse(y_coordinate_val);
+        }
+        else if (x_coordinate_val >160)
+        {
+            clockwise(x_coordinate_val);
+        }
 
-		else if (x_coordinate_val <100)
-		{
-			counter_clockwise(x_coordinate_val);
-		}
+        else if (x_coordinate_val <100)
+        {
+            counter_clockwise(x_coordinate_val);
+        }
 
-		else
-		{
-			no_move();
-		}
-	}
+        else
+        {
+            no_move();
+        }
+    }
 
 }
 
@@ -237,7 +237,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-//	uint8_t xy_coordinate_val[2];
+//  uint8_t xy_coordinate_val[2];
 
   /* USER CODE END 1 */
 
@@ -275,7 +275,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  direction();
+      direction();
   }
   /* USER CODE END 3 */
 }
