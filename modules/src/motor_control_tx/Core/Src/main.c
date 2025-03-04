@@ -6,6 +6,10 @@
   ******************************************************************************
   * @attention
   *
+  * This program is setup to transmit the joystick X and Y coordinates to the
+  * motor control rx project. A debug led lights up to indicate data
+  * is transmitting
+  *
   * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
@@ -111,10 +115,12 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+	  //convert joystick analog data to digital data and store in a buffer to be transmitted
 	  HAL_ADC_Start_DMA(&hadc1, buf, 2);
 	  if (tx(buf)==1);
 	  {
-		  HAL_GPIO_WritePin (GPIOA, GPIO_PIN_9, GPIO_PIN_SET);
+		  HAL_GPIO_WritePin (GPIOA, GPIO_PIN_9, GPIO_PIN_SET);//debug led lights up if data is transmitted
 	  }
 
 	  HAL_Delay(1);
@@ -124,13 +130,9 @@ int main(void)
 	  HAL_Delay(1);
   }
 
-
-//	  HAL_UART_Transmit (&huart2, &test, 1 , 1000);
-
-
-  }
-  /* USER CODE END 3 */
 }
+  /* USER CODE END 3 */
+
 
 /**
   * @brief System Clock Configuration
