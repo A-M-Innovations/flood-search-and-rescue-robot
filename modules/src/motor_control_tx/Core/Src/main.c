@@ -118,7 +118,7 @@ int main(void)
 
 	  //convert joystick analog data to digital data and store in a buffer to be transmitted
 	  HAL_ADC_Start_DMA(&hadc1, buf, 2);
-	  if (tx(buf)==1);
+	  if (tx((uint8_t*) buf)==1)
 	  {
 		  HAL_GPIO_WritePin (GPIOA, GPIO_PIN_9, GPIO_PIN_SET);//debug led lights up if data is transmitted
 	  }
