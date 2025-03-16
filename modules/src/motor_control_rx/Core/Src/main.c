@@ -25,7 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "../../../../lib/NRF24L01.h"
+#include "../../../../lib/motor_control/NRF24L01.h"
 #include "string.h"
 #include "stdio.h"
 /* USER CODE END Includes */
