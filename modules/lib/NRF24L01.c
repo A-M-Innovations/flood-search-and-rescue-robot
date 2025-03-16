@@ -6,7 +6,7 @@
  */
 
 #include "stm32f4xx_hal.h"
-#include "../../../../include/NRF24L01.h"
+#include "../../../../lib/NRF24L01.h"
 
 extern SPI_HandleTypeDef hspi1;
 

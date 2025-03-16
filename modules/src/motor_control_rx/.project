@@ -33,7 +33,7 @@
 		<link>
 			<name>Core/Inc/NRF24L01.h</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/include/NRF24L01.h</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/lib/NRF24L01.h</locationURI>
 		</link>
 		<link>
 			<name>Core/Src/NRF24L01.c</name>
