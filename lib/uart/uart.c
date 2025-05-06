@@ -19,10 +19,3 @@ void uart_init_8_bits(const int UART_NUM, const int UART_RX_PIN, const int UART_
     ESP_ERROR_CHECK(uart_set_pin(UART_NUM, UART_TX_PIN, UART_RX_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));    
     ESP_ERROR_CHECK(uart_driver_install(UART_NUM, RX_BUFFER_SIZE, 0, 0, NULL, 0));
 }
-
-
-void rx_uart_data(const int UART_NUM, const int RX_BUFFER_SIZE, int* rx_bytes, uint8_t* data, int ms){
-
-    *rx_bytes = uart_read_bytes(UART_NUM, data, RX_BUFFER_SIZE, ms / portTICK_PERIOD_MS);
-
-}
