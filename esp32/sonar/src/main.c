@@ -1,32 +1,41 @@
+  /*
+  ******************************************************************************
+  * This program will send sonar data back to the host via wifi. The distance 
+  * will be in units of feet. You can also view the distance in the serial
+  * monitor.
+  ******************************************************************************
+*/
+
 #include <stdio.h>
 #include <driver/gpio.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include "driver/gptimer.h"
-#include "esp_log.h"   // For logging (like printf, but better)
-#include <esp_timer.h> // For microsecond delays
+#include "esp_log.h"   
+#include <esp_timer.h> 
 #include <freertos/queue.h>
 
 
-//Macro for the GPIO pin to set the trig input pin on the sonar module
 #define TRIG 32
-//Macro for the GPIO pin to read the echo output pin on the sonar module
 #define ECHO 33
-#define TIMER_DIVIDER 80
-static QueueHandle_t distance_queue; // Queue to send distance from ISR to task
-int distance = 0;
-static volatile bool echo_active = false;
+#define TIMER_DIVIDER 80 //Used to set clock rate 1MHz in gptimer intialziation
+static QueueHandle_t distance_queue; //Queue to send distance from ISR to distance task
+int distance = 0; 
+static volatile bool echo_active = false; //indicates whether sonar module transmitted an echo
 static const char *TAG = "Distance";
 static gptimer_handle_t gptimer = NULL;
 
 
-
+//Handles the rising and falling edge of the echo pin
+//Starts the timer if echo pin goes high and stops,
+//calculates the distance based on elapsed time and
+//stores in in a queue for the distance task to print
 void IRAM_ATTR echo_isr_handler(void *arg)
 {
     if (gpio_get_level(ECHO)){
         ESP_ERROR_CHECK(gptimer_set_raw_count(gptimer, 0x00000000ULL));
-        ESP_ERROR_CHECK(gptimer_start(gptimer));        
-        echo_active = true;
+        ESP_ERROR_CHECK(gptimer_start(gptimer));
+        echo_active = true; // to enable distance calculation when gpio interrupt occurs
     }
     else if (echo_active)
     {
@@ -34,38 +43,38 @@ void IRAM_ATTR echo_isr_handler(void *arg)
         ESP_ERROR_CHECK(gptimer_stop(gptimer));
         uint64_t timer_value = 0;
         ESP_ERROR_CHECK(gptimer_get_raw_count(gptimer, &timer_value));
-        distance =  (0.034 * timer_value) / 2;
-        xQueueSendFromISR(distance_queue, &distance, NULL);
+        distance =  (0.034 * timer_value) / 2; //uses the distance-speed-time equation to calcuate distance
+        xQueueSendFromISR(distance_queue, &distance, NULL); //distance is stored in a queue to later be used in the distance task
     }
 }
 
+//Alarm callback that is used when the echo is not received back after 38ms. 
+//Sends a distance value of -1 to distance task to indicate no echo and
+//print no echo message.
 static bool IRAM_ATTR timer_alarm_cb(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_ctx)
 {
     bool need_yield = false;
     if(echo_active){
-        // Clears the interrupt flag so the ISR can run again next time.
         ESP_ERROR_CHECK(gptimer_stop(timer));
         ESP_ERROR_CHECK(gptimer_set_raw_count(timer, 0x00000000ULL));
-        distance =  -1;
-        xQueueSendFromISR(distance_queue, &distance, NULL);
+        distance =  -1; //stored in queue so that distance task can be unblocked
+        xQueueSendFromISR(distance_queue, &distance, NULL); //distance is stored in a queue to later be used in the distance task
         echo_active = false;
-        need_yield  =true;    
+        need_yield  =true; //since true, switch to another task immediately when return is executed 
     }
     return need_yield;
 }
 
-//resets the TRIG GPIO pin and sets its as an output
+//resets the TRIG GPIO pin and sets it as an output
 void gpio_trig_config(){    
     gpio_reset_pin(TRIG);
     gpio_set_direction(TRIG, GPIO_MODE_OUTPUT);
     gpio_set_level(TRIG, 0);
 }
 
-//Initializes the echo gpio pin configuration parameters and resets the pin
+//Initializes the echo gpio pin configuration parameters resets the pin and enables an intr.
 void gpio_echo_config(){
-
     gpio_reset_pin(ECHO);
-    // gpio_set_direction(TRIG, GPIO_MODE_OUTPUT);
     gpio_config_t config = {
         .pin_bit_mask = (1ULL << ECHO),     // Select the pin using a bit mask
         .mode = GPIO_MODE_INPUT,
@@ -86,11 +95,10 @@ void init_timer() {
         ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer));
 }
 
-
-
+//initalize the alarm and registers the timer_alarm_cb callback
 void init_alarm(){
 gptimer_alarm_config_t alarm_config = {
-        .alarm_count = 38000, // 38 ms = 38000 ticks at 1 MHz
+        .alarm_count = 38000, // 38 ms = 38000 ticks at 1 MHz. Users clock rate of timer.
         .reload_count = 0,
         .flags.auto_reload_on_alarm = false
     };
@@ -101,11 +109,8 @@ gptimer_event_callbacks_t cbs = {
     };
 
     ESP_ERROR_CHECK(gptimer_register_event_callbacks(gptimer, &cbs, NULL));
-    ESP_ERROR_CHECK(gptimer_enable(gptimer));
+    ESP_ERROR_CHECK(gptimer_enable(gptimer)); //enable timer after registering the callback
 }
-
-
-
 
 //Sets the trig pin high or low for 10us
 void trig()
@@ -116,7 +121,7 @@ void trig()
 }
 
 
-
+//Prints the distance to a serial monitor
 void distance_task(void *arg)
 {
     while(1)
@@ -131,7 +136,6 @@ void distance_task(void *arg)
             {
                 ESP_LOGI(TAG,"distance: %d cm", distance);
             }
-            
         }
     }
 }
@@ -142,15 +146,13 @@ void app_main() {
     init_timer();
     init_alarm();
 
-    distance_queue = xQueueCreate(10, sizeof(int));
-    xTaskCreate(distance_task, "distance_task", 2048, NULL, 5, NULL);
+    distance_queue = xQueueCreate(10, sizeof(int)); //creates a queue to store the distance to be used in the distance task
+    xTaskCreate(distance_task, "distance_task", 2048, NULL, 5, NULL); //task is created to print the distance to serial monitor
     while(1)
     {        
         trig();
-        vTaskDelay(pdMS_TO_TICKS(100));    
+        vTaskDelay(pdMS_TO_TICKS(100)); //wait so IDLE task can be ran and WDT doesnt expire
     }
-
-
 }
 
 
