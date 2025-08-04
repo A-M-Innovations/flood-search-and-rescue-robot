@@ -7,6 +7,9 @@
 void gpgga_tokenizer(int rx_bytes, uint8_t* gps_data){
     char *tokens[15];
     char *gps_data_str = malloc((RX_BUFFER_SIZE_256+1)*sizeof(uint8_t));
+    // later strsep, modifies the gps_data_str pointer so this variable keeps
+    // the original pointer value to free it at the end of the function
+    char *gps_data_str_temp = gps_data_str;
     char *token;
 
         if (rx_bytes > 0){
@@ -24,7 +27,7 @@ void gpgga_tokenizer(int rx_bytes, uint8_t* gps_data){
                 token = strsep(&gps_data_str, ",\n");
             }
         }
-
+    free(gps_data_str_temp);
 }
 
 void rx_gps_data(){
@@ -39,6 +42,5 @@ void rx_gps_data(){
             gpgga_tokenizer(rx_bytes, data);
         }
     }
-
     free(data);
 }
