@@ -1,0 +1,10 @@
+# Eclipse
+.metadata
+.settings
+[Rr]elease
+[Dd]ebug
+launch
+.cfg
+.ld
+.cfg
+*.launch
